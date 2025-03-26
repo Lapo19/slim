@@ -65,4 +65,22 @@ class AlunniController
     }
     return $response->withHeader("Content-type", "application/json")->withStatus(201);
   }
+
+  public function search(Request $request, Response $response, $args){
+    sleep(1);
+    $mysqli_connection = new MySQLi('my_mariadb', 'root', 'ciccio', 'scuola');
+    $parametri = $request->getQueryParams();
+    $inizioNome = $parametri['search'] ?? null;
+    $colonna = $parametri['sortCol'] ?? null;
+    $ordine = $parametri['sort'] ?? null;
+    $result = $mysqli_connection->query("SELECT * FROM alunni WHERE nome LIKE '%$inizioNome%' ORDER BY $colonna $ordine");
+    $result = $result->fetch_all(MYSQLI_ASSOC);
+    if($result){
+      $response->getBody()->write(json_encode($result));
+    } else {
+      $response->getBody()->write(json_encode(array("message"=>$mysqli_connection->error)));
+    }
+    return $response->withHeader("Content-type", "application/json")->withStatus(200);
+  }
+
 }
